@@ -1,17 +1,16 @@
 import os
 import vimeo
 import json
-from pathlib import Path
 from urllib.parse import urlparse
 import shutil
 
-ALLOWED_EXTENSION = ['.mp4', '.avi']
+ALLOWED_EXTENSION = ('.mp4', '.avi')
 
 
 def connect_to_vimeo():
     print("Connecting to Vimeo....")
 
-    config_file = os.path.dirname(os.path.realpath(__file__)) + '/config.json'
+    config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config.json')
     config = json.load(open(config_file))
 
     if 'client_id' not in config or 'client_secret' not in config:
@@ -62,14 +61,7 @@ def get_vimeo_id(metadata):
 
 
 def generate_scorm(popup_id, completed_id, out_foldr):
-    json_file = []      #FIXME: Umh...
-
-    for folder, subs, files in os.walk(out_foldr):
-        for filename in files:
-            if filename.endswith('.json'):
-                json_file.append(os.path.abspath(os.path.join(folder, filename)))
-
-    config_file = ''.join(json_file)
+    config_file = os.path.join(out_foldr, 'config.json')
 
     with open(config_file, 'r') as scorm_json_file:
         data = json.load(scorm_json_file)
@@ -88,22 +80,13 @@ def generate_scorm(popup_id, completed_id, out_foldr):
     shutil.make_archive(out_foldr, 'zip', out_foldr)
 
 
-def main(path_video_folder='/home/jan/Scaricati/PROVA', path_scorm_template='/home/jan/Scaricati/Scorm_no_popup_v4'):
+def main(path_video_folder='/path/to/video/directory', path_scorm_template='/path/to/SCORM/template'):
     out_folder = path_video_folder
     key_auth = connect_to_vimeo()
-    files_path = []
 
-    # FIXME: This should be a list comprehension :) # files = [x for x in os.walk(PATH_VIDEO_FOLDR) if x.endswith( ...]
-    for folder, subs, files in os.walk(path_video_folder):
-        for filename in files:
-            file_extension = os.path.splitext(filename)[1]
-            if file_extension in ALLOWED_EXTENSION:
-                files_path.append(os.path.abspath(os.path.join(folder, filename)))
-
-    # FIXME: Merge this for with the previous: Do a single for loop! :)
-    for filename in files_path:
+    for filename in [f for f in os.listdir(path_video_folder) if f.endswith(ALLOWED_EXTENSION)]:
         print('Processing file {}'.format(filename))
-        abs_video_path = Path(filename).resolve()
+        abs_video_path = os.path.abspath(os.path.join(path_video_folder, filename))
 
         popup_video_metadata = upload_video(key_auth, str(abs_video_path))
         popup_id = get_vimeo_id(popup_video_metadata)

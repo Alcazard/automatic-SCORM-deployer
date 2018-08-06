@@ -4,6 +4,7 @@ import json
 from urllib.parse import urlparse
 import shutil
 
+
 ALLOWED_EXTENSION = ('.mp4', '.avi')
 
 
@@ -44,11 +45,9 @@ def upload_video(key_auth, path_video, video_title_suffix=''):
         video_metadata = key_auth.get(uri + '?fields=link').json()
         print('"{}" has been uploaded to {}'.format(video_name, video_metadata['link']))
 
-        if video_title_suffix is '_completed':
+        if video_title_suffix is '_completato':
             print('Change preset to completed...maybe')
-            # response = key_auth.patch(uri, video_metadata[embed][uri]='/presets/120418922')
-            # Change the preset of the video (take it as a parameter!
-            # key_auth.patch(uri, data={'name': 'Video title', 'description': '...'})
+            key_auth.put(uri + '/presets/120447750')
 
         return video_metadata
 
